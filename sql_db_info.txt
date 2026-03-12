@@ -1,0 +1,44 @@
+1) List all tables + their create SQL (best “full picture”)
+
+SELECT name AS table_name, sql
+FROM sqlite_master
+WHERE type='table' AND name NOT LIKE 'sqlite_%'
+ORDER BY name;
+
+2) Columns for every table (name/type/null/default/PK)
+
+SELECT m.name AS table_name,
+       p.cid,
+       p.name AS column_name,
+       p.type AS data_type,
+       p."notnull" AS not_null,
+       p.dflt_value AS default_value,
+       p.pk AS is_pk
+FROM sqlite_master m
+JOIN pragma_table_info(m.name) p
+WHERE m.type='table' AND m.name NOT LIKE 'sqlite_%'
+ORDER BY m.name, p.cid;
+
+
+3) Indexes (including uniqueness)
+
+SELECT tbl_name AS table_name, name AS index_name, sql
+FROM sqlite_master
+WHERE type='index' AND sql IS NOT NULL
+ORDER BY tbl_name, name;
+
+4) Foreign keys
+
+SELECT m.name AS table_name,
+       fk.id,
+       fk.seq,
+       fk."table" AS ref_table,
+       fk."from" AS from_col,
+       fk."to"   AS to_col,
+       fk.on_update,
+       fk.on_delete,
+       fk.match
+FROM sqlite_master m
+JOIN pragma_foreign_key_list(m.name) fk
+WHERE m.type='table' AND m.name NOT LIKE 'sqlite_%'
+ORDER BY m.name, fk.id, fk.seq;
